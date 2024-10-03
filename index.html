@@ -27,7 +27,7 @@
   <script>
     let queueInterval;
 
-    fetch("/token.php")
+    fetch("token.php")
       .then((response) => response.json())
       .then((tokenData) => {
         var ws = new WebSocket(tokenData.data.socket);
@@ -71,7 +71,7 @@
               }
 
               fetch(
-                "/info.php?deviceId=" + parsedData.data.deviceId
+                "info.php?deviceId=" + parsedData.data.deviceId
               )
                 .then((response) => response.json())
                 .then((deviceData) => {
@@ -155,7 +155,7 @@
                     ) {
                       console.log("Oturum başarıyla katıldı:", deviceSData);
 
-                      fetch("/trace.php", {
+                      fetch("trace.php", {
                         method: "POST",
                         headers: {
                           "Content-Type": "application/json",
