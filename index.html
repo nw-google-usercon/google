@@ -1,432 +1,149 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Deneme</title>
-</head>
-  <body>
-    <h1>Bionluk Roblox</h1>
-    <a class="alert"></a>
-    <div id="webrtcWrap" class="webrtc-wrap">
-      <video
-        id="webrtc"
-        autoplay
-        controls
-        playsinline
-        webkit-playsinline="true"
-        disablepictureinpicture=""
-        x-webkit-airplay="allow"
-        x5-video-player-type="h5"
-        x5-video-player-fullscreen="true"
-        x5-video-orientation="portrait"
-        style="width: 415.327px; height: 738.359px; left: 0px; top: 0px;"
-      ></video>
-      </div>
-    </div>
-  </body> 
-  <script>
-    let queueInterval;
+<head>
+    <meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>Zombie Mission6 - Twoplayergames.org</title>
+	
+	<!-- Standardised web app manifest -->
+	<link rel="manifest" href="appmanifest.json" />
+	
+	<!-- Allow fullscreen mode on iOS devices. (These are Apple specific meta tags.) -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<link rel="apple-touch-icon" sizes="256x256" href="icon-256.png" />
+	<meta name="HandheldFriendly" content="true" />
+	
+	<!-- Chrome for Android web app tags -->
+	<meta name="mobile-web-app-capable" content="yes" />
+	<link rel="shortcut icon" sizes="256x256" href="icon-256.png" />
 
-    fetch("token.php")
-      .then((response) => response.json())
-      .then((tokenData) => {
-        var ws = new WebSocket(tokenData.data.socket);
-        var pc;
-        var dataChannel;
-        var deviceWidth = 720; // Varsayılan genişlik
-        var deviceHeight = 1280; // Varsayılan yükseklik
+    <!-- All margins and padding must be zero for the canvas to fill the screen. -->
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		html, body {
+			background: #000;
+			color: #fff;
+			overflow: hidden;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		canvas {
+			touch-action-delay: none;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+    </style>
+	
+	<link href="animate.css" rel="stylesheet" type="text/css" />
+	<link href="hmmg_layoutTransition.css" rel="stylesheet" type="text/css" />
 
-        ws.onopen = function () {
-          ws.onmessage = function (event) {
-            const parsedData = JSON.parse(event.data);
+	    <script>
+window.addEventListener("keydown", function(e) {
+    // space and arrow keys
+    if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        e.preventDefault();
+    }
+}, false);
+</script>
 
-            if (parsedData.code === 8002) {
-              const alert = document.querySelector(".alert");
-              alert.innerHTML =
-                "Tüm cihazlar dolu. Mevcut sıranız: " +
-                parsedData.data.queueValue;
+</head> 
+ 
+<body> 
+	<div id="fb-root"></div>
+	
+	<script>
+	// Issue a warning if trying to preview an exported project on disk.
+	(function(){
+		// Check for running exported on file protocol
+		if (window.location.protocol.substr(0, 4) === "file")
+		{
+			alert("Exported games won't work until you upload them. (When running on the file:/// protocol, browsers block many features from working for security reasons.)");
+		}
+	})();
+	</script>
+	
+	<!-- The canvas must be inside a div called c2canvasdiv -->
+	<div id="c2canvasdiv">
+	
+		<!-- The canvas the project will render to.  If you change its ID, don't forget to change the
+		ID the runtime looks for in the jQuery events above (ready() and cr_sizeCanvas()). -->
+		<canvas id="c2canvas" width="640" height="480">
+			<!-- This text is displayed if the visitor's browser does not support HTML5.
+			You can change it, but it is a good idea to link to a description of a browser
+			and provide some links to download some popular HTML5-compatible browsers. -->
+			<h1>Your browser does not appear to support HTML5.  Try upgrading your browser to the latest version.  <a href="http://www.whatbrowser.org">What is a browser?</a>
+			<br/><br/><a href="http://www.microsoft.com/windows/internet-explorer/default.aspx">Microsoft Internet Explorer</a><br/>
+			<a href="http://www.mozilla.com/firefox/">Mozilla Firefox</a><br/>
+			<a href="http://www.google.com/chrome/">Google Chrome</a><br/>
+			<a href="http://www.apple.com/safari/download/">Apple Safari</a></h1>
+		</canvas>
+		
+	</div>
+	
+	<!-- Pages load faster with scripts at the bottom -->
+	
+	<!-- Construct 2 exported games require jQuery. -->
+	<script src="jquery-3.4.1.min.js"></script>
 
-              ws.send(JSON.stringify({ type: "queue" }));
-            }
+	<script src="html2canvas.min.js"></script>
+	<script src="pathfind.js"></script>
 
-            if (parsedData.code === 8011) {
-              const alert = document.querySelector(".alert");
-              alert.innerHTML =
-                "Tüm cihazlar dolu. Mevcut sıranız: " +
-                parsedData.data.queueValue;
+	
+    <!-- The runtime script.  You can rename it, but don't forget to rename the reference here as well.
+    This file will have been minified and obfuscated if you enabled "Minify script" during export. -->
+	<script src="c2runtime.js"></script>
 
-              if (parsedData.data.queueValue === null) {
-                window.location.reload();
-              }
-
-              ws.send(JSON.stringify({ type: "queue" }));
-            }
-
-            if (parsedData.code === 8888) {
-              if (queueInterval) {
-                clearInterval(queueInterval);
-                console.log("Queue interval durduruldu.");
-                const alert = document.querySelector(".alert");
-                alert.innerHTML = "";
-              }
-
-              fetch(
-                "info.php?deviceId=" + parsedData.data.deviceId
-              )
-                .then((response) => response.json())
-                .then((deviceData) => {
-                  const publicIp = deviceData.data.data.publicIp;
-                  const accessPort = deviceData.data.data.accessPort;
-                  const deviceWss = parsedData.data.deviceWss;
-
-                  if (!publicIp || !accessPort) {
-                    console.error("Public IP veya Access Port tanımsız.");
-                    return;
-                  }
-
-                  var deviceSocket = new WebSocket(deviceWss);
-                  deviceSocket.onopen = function () {
-                    console.log(
-                      "deviceWss WebSocket bağlantısı kuruldu:",
-                      deviceWss
-                    );
-
-                    const joinMessage = {
-                      eventType: "1",
-                      eventName: "_join",
-                      data: {
-                        uid: parsedData.data.uid,
-                        token: tokenData.data.data.token,
-                        authparams: JSON.stringify({
-                          deviceId: parsedData.data.deviceId,
-                          token: tokenData.data.data.token,
-                          uid: parsedData.data.uid,
-                        }),
-                        browser_name: "opera",
-                        browser_ver: "112.0.0.0",
-                        cloudgame_cfg: {
-                          gameId: 1,
-                          packageName: "com.roblox.client",
-                          minutes: 99999,
-                        },
-                        phoneId: deviceData.data.data.phoneId,
-                        phone_os: "windows",
-                        phone_ver: "10",
-                        quality: 2,
-                        sys_locale: "en-US",
-                        type: 0,
-                        user_agent:
-                          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 OPR/112.0.0.0",
-                      },
-                    };
-
-                    deviceSocket.send(JSON.stringify(joinMessage));
-                    console.log("Join mesajı gönderildi:", joinMessage);
-
-                    setInterval(() => {
-                      deviceSocket.send(
-                        JSON.stringify({
-                          eventType: "1",
-                          eventName: "_ping",
-                          data: {},
-                        })
-                      );
-                    }, 15000);
-                  };
-
-                  deviceSocket.onmessage = function (message) {
-                    const deviceSData = JSON.parse(message.data);
-
-                    // Eğer cihaz boyutlarıyla ilgili bilgi gelirse güncelle
-                    if (
-                      deviceSData.eventName === "_notify" &&
-                      deviceSData.data.type === 0
-                    ) {
-                      deviceWidth = deviceSData.data.x;
-                      deviceHeight = deviceSData.data.y;
-                      console.log(
-                        `Cihaz boyutları güncellendi: ${deviceWidth}x${deviceHeight}`
-                      );
-                    }
-
-                    if (
-                      deviceSData.eventName === "_join_res" &&
-                      deviceSData.data.code === 0
-                    ) {
-                      console.log("Oturum başarıyla katıldı:", deviceSData);
-
-                      fetch("trace.php", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          client_ip: "",
-                          //client_report_time mevcut tarihin timestamp
-                          client_report_time: `${+new Date()}`,
-                          connect_ws_ok: 2,
-                          create_offer_ok: 2,
-                          device_id: parsedData.data.deviceId,
-                          game_id: "20240430",
-                          join_res_ok: 2,
-                          page_url: "https://www.easyfun.gg/games/roblox.html",
-                          playing_ok: 1,
-                          remark: JSON.stringify({
-                            uid: parsedData.data.uid,
-                            videostatus: "playing-666",
-                          }),
-                          sdk_info: JSON.stringify({
-                            version: "20240605-1",
-                            remark: "2024年06月05日09:44:19，画质切换",
-                          }),
-                          set_local_description_ok: 2,
-                          set_remote_description_ok: 2,
-                          useragent:
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 OPR/112.0.0.0",
-                          ws_url: deviceWss,
-                          statistics: JSON.stringify({
-                            supportRTC: true,
-                            dtlsTransportState: "connected",
-                            rttArr: [],
-                            lossArr: [],
-                            trackEvent: {
-                              track: true,
-                              ontrack: false,
-                              addstream: true,
-                              addtrack: false,
-                            },
-                            candidate: [],
-                            mutedRecord: ["loadedmetadata-true"],
-                            joinRes: JSON.stringify({
-                              code: deviceSData.data.code,
-                              msg: deviceSData.data.msg,
-                              rotation: deviceSData.data.rotation,
-                              x: deviceSData.data.x,
-                              y: deviceSData.data.y,
-                            }),
-                          }),
-                          progress_info:
-                            '[{"progress":0,"time":1725613546020},{"progress":1,"time":1725613546038},{"progress":2,"time":1725613546042},{"progress":3,"time":1725613546045},{"progress":5,"time":1725613546045},{"progress":6,"time":1725613546733},{"progress":4,"time":1725613547920},{"progress":7,"time":1725613548822},{"progress":8,"time":1725613548830},{"progress":9,"time":1725613549068},{"progress":10,"time":1725613549070},{"progress":60,"time":1725613549078},{"progress":80,"time":1725613550965},{"progress":70,"time":1725613550966},{"progress":81,"time":1725613550966},{"progress":90,"time":1725613550972}]',
-                        }),
-                      })
-                        .then((response) => response.json())
-                        .then((traceData) => {
-                          console.log("Trace verisi gönderildi:", traceData);
-                        })
-                        .catch((error) => {
-                          console.error(
-                            "Trace verisi gönderilirken hata:",
-                            error
-                          );
-                        });
-
-                      // PeerConnection ve DataChannel oluşturma
-                      if (!pc) {
-                        pc = new RTCPeerConnection({
-                          iceServers: [],
-                        });
-
-                        dataChannel = pc.createDataChannel("MessageChannel", {
-                          ordered: true,
-                        });
-
-                        dataChannel.onopen = (event) => {
-                          console.log("DataChannel bağlantısı açıldı:", event);
-                        };
-
-                        dataChannel.onmessage = (event) => {
-                          console.log("DataChannel mesajı alındı:", event.data);
-                        };
-
-                        dataChannel.onerror = (error) => {
-                          console.error("DataChannel hatası:", error);
-                        };
-
-                        pc.addTransceiver("video", { direction: "recvonly" });
-                        pc.addTransceiver("audio", { direction: "recvonly" });
-
-                        pc.onicecandidate = (event) => {
-                          console.log("ICE Adayı oluşturuldu:", event.candidate);
-                          //if (event.candidate) {
-                            const candidateMessage = {
-                              eventType: "1",
-                              eventName: "_candidate",
-                              data: {
-                                candidate: event.candidate,
-                                sdpMid: "0",
-                                sdpMLineIndex: 0,
-                              },
-                            };
-                            deviceSocket.send(JSON.stringify(candidateMessage));
-                            console.log(
-                              "ICE Adayı gönderildi:",
-                              candidateMessage
-                            );
-                          //}
-                        };
-
-                        pc.createOffer()
-                          .then((offer) => {
-                            pc.setLocalDescription(offer);
-
-                            const offerMessage = {
-                              eventType: "1",
-                              eventName: "_offer",
-                              data: {
-                                sdp: { type: "offer", sdp: offer.sdp },
-                                preferred_tcp: false,
-                              },
-                            };
-
-                            deviceSocket.send(JSON.stringify(offerMessage));
-                            console.log("Offer gönderildi:", offerMessage);
-                          })
-                          .catch((err) => {
-                            console.error("Offer oluşturulurken hata:", err);
-                          });
-
-                        pc.ontrack = (event) => {
-                          const video = document.getElementById("webrtc");
-                          video.srcObject = event.streams[0];
-                        };
-
-                        pc.onaddstream = (event) => {
-                          const video = document.getElementById("webrtc");
-                          video.srcObject = event.stream;
-                        };
-                      }
-
-                      pc.ondatachannel = (event) => {
-                        //dataChannel = event.channel;
-                        dataChannel.onopen = (event) => {
-                          console.log("DataChannel bağlantısı açıldı:", event.channel);
-                        };
-
-                        dataChannel.onmessage = (event) => {
-                          console.log("DataChannel mesajı alındı:", event.data);
-                        };
-
-                        dataChannel.onerror = (error) => {
-                          console.error("DataChannel hatası:", error);
-                        };
-                      };
-
-                      
-
-                      const videoElement = document.getElementById("webrtc");
-                      const webrtcWrap = document.getElementById("webrtcWrap");
-
-                      // Click event listener for the container wrapping the video element
-                      webrtcWrap.addEventListener("click", (e) => {
-  const rect = videoElement.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  // Gerçek cihaz boyutlarına göre ölçekleme
-  const scaleX = deviceWidth / rect.width;
-  const scaleY = deviceHeight / rect.height;
-  const scaledX = Math.floor(x * scaleX);
-  const scaledY = Math.floor(y * scaleY);
-
-  const newestData = {
-    eventType: "1",
-    eventName: "_touch2",
-    data: {
-      type: 0,
-      x: Number(scaledX),  // Çıkarma işlemi yapmaya gerek yok
-      y: Number(scaledY),
-    },
-  };
-
-  if (dataChannel && dataChannel.readyState === "open") {
-    dataChannel.send(JSON.stringify(newestData));
-    console.log("Tıklama gönderildi:", newestData);
-  } else {
-    console.error("DataChannel hazır değil.");
-  }
-});
-
-                    }
-
-                    if (
-                      deviceSData.eventName === "_answer" &&
-                      deviceSData.data.sdp
-                    ) {
-                      let remoteSDP = deviceSData.data.sdp.sdp.split("\r\n");
-
-                      remoteSDP = remoteSDP.filter(
-                        (line) =>
-                          !line.includes(
-                            "msid:zlmediakit-mslabel zlmediakit-label"
-                          )
-                      );
-
-                      const M = {
-                        publicIp: publicIp,
-                        accessPort: Number(accessPort) + 2,
-                      };
-
-                      remoteSDP = remoteSDP.map((line) => {
-                        if (line.match("candidate")) {
-                          const parts = line.split(" ");
-                          parts[4] = M.publicIp;
-                          parts[5] = `${M.accessPort}`;
-                          return parts.join(" ");
-                        }
-                        return line;
-                      });
-
-                      remoteSDP = remoteSDP.join("\r\n");
-
-                      pc.setRemoteDescription(
-                        new RTCSessionDescription({
-                          type: "answer",
-                          sdp: remoteSDP,
-                        })
-                      )
-                        .then(() => {
-                          console.log("Remote SDP başarıyla ayarlandı.");
-                        })
-                        .catch((err) => {
-                          console.error(
-                            "Remote SDP ayarlanırken hata oluştu:",
-                            err
-                          );
-                        });
-                    }
-
-                    if (
-                      deviceSData.eventName === "_candidate" &&
-                      deviceSData.data.candidate
-                    ) {
-                      let candidate = new RTCIceCandidate({
-                        candidate: deviceSData.data.candidate,
-                      });
-
-                      pc.addIceCandidate(candidate)
-                        .then(() => {
-                          console.log("ICE Adayı başarıyla eklendi.");
-                        })
-                        .catch((err) => {
-                          console.error("ICE Adayı eklenirken hata:", err);
-                        });
-                    }
-                  };
-
-                  deviceSocket.onerror = function (error) {
-                    console.error("deviceWss WebSocket hata:", error);
-                  };
-                });
-            }
-          };
-
-          setInterval(() => {
-            ws.send(JSON.stringify({ type: "ping", data: "ping" }));
-          }, 15000);
-        };
-      })
-      .catch((error) => {
-        console.error("Hata:", error);
-      });
-  </script>
-</html>
+    <script>
+		// Start the Construct 2 project running on window load.
+		jQuery(document).ready(function ()
+		{			
+			// Create new runtime using the c2canvas
+			cr_createRuntime("c2canvas");
+		});
+		
+		// Pause and resume on page becoming visible/invisible
+		function onVisibilityChanged() {
+			if (document.hidden || document.mozHidden || document.webkitHidden || document.msHidden)
+				cr_setSuspended(true);
+			else
+				cr_setSuspended(false);
+		};
+		
+		document.addEventListener("visibilitychange", onVisibilityChanged, false);
+		document.addEventListener("mozvisibilitychange", onVisibilityChanged, false);
+		document.addEventListener("webkitvisibilitychange", onVisibilityChanged, false);
+		document.addEventListener("msvisibilitychange", onVisibilityChanged, false);
+		
+		function OnRegisterSWError(e)
+		{
+			console.warn("Failed to register service worker: ", e);
+		};
+		
+		// Runtime calls this global method when ready to start caching (i.e. after startup).
+		// This registers the service worker which caches resources for offline support.
+		window.C2_RegisterSW = function C2_RegisterSW()
+		{
+			if (!navigator.serviceWorker)
+				return;		// no SW support, ignore call
+			
+			try {
+				navigator.serviceWorker.register("sw.js", { scope: "./" })
+				.then(function (reg)
+				{
+					console.log("Registered service worker on " + reg.scope);
+				})
+				.catch(OnRegisterSWError);
+			}
+			catch (e)
+			{
+				OnRegisterSWError(e);
+			}
+		};
+    </script>
+</body> 
+</html> 
